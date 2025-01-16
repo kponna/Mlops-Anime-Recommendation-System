@@ -3,7 +3,4 @@ pandas
 scikit-learn
 seaborn
 matplotlib
-apyori
 wordcloud
-plotly
-nbformat
