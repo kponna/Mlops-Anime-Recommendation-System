@@ -1,6 +1,8 @@
-numpy
+numpy<2.0
 pandas
 scikit-learn
 seaborn
 matplotlib
 wordcloud
+tensorflow
+scikit-surprise
