@@ -61,13 +61,11 @@ if __name__ == '__main__':
     destination_folder = DATASETS_FILE_PATH
     database = DATA_INGESTION_DATABASE_NAME 
     network_obj = NetworkDataExtract()
-    
-    # Extract CSV files
+     
     csv_files = network_obj.extract_csv_files(zip_file_path, destination_folder)
     
     for csv_file in csv_files:
         collection_name = os.path.splitext(os.path.basename(csv_file))[0] 
-        records = network_obj.csv_to_json_convertor(file_path=csv_file) 
-        # Insert records into MongoDB under appropriate collection
+        records = network_obj.csv_to_json_convertor(file_path=csv_file)  
         no_of_records = network_obj.insert_data_mongodb(records, database, collection_name)
         print(f"Inserted {no_of_records} records from {csv_file} into MongoDB collection '{collection_name}'.")

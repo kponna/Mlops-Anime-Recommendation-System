@@ -1,4 +1,11 @@
-ARS
-datasets/anime_filtered.csv
-datasets/users-score-2023.csv
-.github/*
+# Ignore the entire ARS directory
+ARS/
+  
+# Ignore all files and subdirectories in the .github directory
+.github/
+
+# Ignore all files and subdirectories in the Artifacts directory
+Artifacts/
+
+# Ignore all files and subdirectories in the logs directory
+logs/

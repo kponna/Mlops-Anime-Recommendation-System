@@ -26,5 +26,8 @@ class DataIngestionConfig:
         """
         self.data_ingestion_dir: str = os.path.join(training_pipeline_config.artifact_dir, DATA_INGESTION_DIR_NAME)
         self.feature_store_anime_file_path: str = os.path.join(self.data_ingestion_dir, DATA_INGESTION_FEATURE_STORE_DIR, ANIME_FILE_NAME) 
-        self.feature_store_userrating_file_path:str = os.path.join(self.data_ingestion_dir,DATA_INGESTION_FEATURE_STORE_DIR,RATING_FILE_NAME)
-        self.feature_store_merged_file_path:str = os.path.join(self.data_ingestion_dir,DATA_INGESTION_FEATURE_STORE_DIR,MERGED_FILE_NAME)
+        self.feature_store_userrating_file_path: str = os.path.join(self.data_ingestion_dir, DATA_INGESTION_FEATURE_STORE_DIR, RATING_FILE_NAME)
+        self.merged_file_path: str = os.path.join(self.data_ingestion_dir, DATA_INGESTION_INGESTED_DIR, MERGED_FILE_NAME)
+        self.anime_collection_name: str = ANIME_COLLECTION_NAME
+        self.rating_collection_name: str = RATING_COLLECTION_NAME
+        self.database_name: str = DATA_INGESTION_DATABASE_NAME
