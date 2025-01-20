@@ -2,7 +2,11 @@ numpy<2.0
 pandas
 scikit-learn
 seaborn
+pymongo
 matplotlib
 wordcloud
 tensorflow
 scikit-surprise
+python-dotenv
+pymongo[srv]==3.6 
+# -e .
