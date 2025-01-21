@@ -5,7 +5,8 @@ from anime_recommendor.exception.exception import AnimeRecommendorException
 
 from anime_recommendor.source.data_ingestion import DataIngestion
 from anime_recommendor.source.data_transformation import DataTransformation
-from anime_recommendor.entity.config_entity import TrainingPipelineConfig,DataIngestionConfig,DataTransformationConfig 
+from anime_recommendor.source.collaborative_recommendors import CollaborativeModelTrainer
+from anime_recommendor.entity.config_entity import TrainingPipelineConfig,DataIngestionConfig,DataTransformationConfig,CollaborativeModelConfig 
  
 if __name__ == "__main__":
     try:
@@ -24,5 +25,14 @@ if __name__ == "__main__":
         data_transformation_artifact = data_transformation.initiate_data_transformation()
         logging.info("Data Transformation Completed.")
         print(data_transformation_artifact)
+
+        # Collaborative Model Training
+        collaborative_model_trainer_config = CollaborativeModelConfig(training_pipeline_config)
+        collaborativemodel_trainer = CollaborativeModelTrainer(collaborative_model_trainer_config= collaborative_model_trainer_config,data_transformation_artifact=data_transformation_artifact)
+        logging.info("Initiating Collaborative Model training.")
+        collaborative_model_trainer_artifact = collaborativemodel_trainer.initiate_model_trainer()
+        logging.info("Collaborative Model training completed.")
+        print(collaborative_model_trainer_artifact)
+
     except Exception as e:
             raise AnimeRecommendorException(e, sys)

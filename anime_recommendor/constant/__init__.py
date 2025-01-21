@@ -28,3 +28,13 @@ Data Transformation related constant start with DATA_VALIDATION VAR NAME
 """
 DATA_TRANSFORMATION_DIR:str = "data_transformation"
 DATA_TRANSFORMATION_TRANSFORMED_DATA_DIR:str = "transformed" 
+
+"""
+Model Trainer related constant start with MODEL TRAINER VAR NAME
+""" 
+MODEL_TRAINER_DIR_NAME: str = "trained_models"
+
+MODEL_TRAINER_COL_TRAINED_MODEL_DIR: str = "collaborative_filtering"
+MODEL_TRAINER_SVD_TRAINED_MODEL_NAME: str = "svd.pkl"
+MODEL_TRAINER_ITEM_KNN_TRAINED_MODEL_NAME: str = "itembasedknn.pkl"
+MODEL_TRAINER_USER_KNN_TRAINED_MODEL_NAME: str = "userbasedknn.pkl"

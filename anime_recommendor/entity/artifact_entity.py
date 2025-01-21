@@ -8,3 +8,9 @@ class DataIngestionArtifact:
 @dataclass
 class DataTransformationArtifact:
     merged_file_path:str
+
+@dataclass
+class CollaborativeModelArtifact:
+    svd_file_path:str
+    item_based_knn_file_path:str
+    user_based_knn_file_path:str 
