@@ -1,6 +1,7 @@
 # Ignore the entire ARS directory
 ARS
-__pycache__
+__pycache__/
+
 .env
 # Ignore all files and subdirectories in the .github directory
 .github/
