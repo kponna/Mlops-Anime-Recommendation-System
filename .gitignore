@@ -9,4 +9,4 @@ Artifacts/
 
 # Ignore all files and subdirectories in the logs directory
 logs/
-__pycache__
+__pycache__/
