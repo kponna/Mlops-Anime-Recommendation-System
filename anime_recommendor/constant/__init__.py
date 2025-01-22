@@ -34,7 +34,11 @@ Model Trainer related constant start with MODEL TRAINER VAR NAME
 """ 
 MODEL_TRAINER_DIR_NAME: str = "trained_models"
 
-MODEL_TRAINER_COL_TRAINED_MODEL_DIR: str = "collaborative_filtering"
+MODEL_TRAINER_COL_TRAINED_MODEL_DIR: str = "collaborative_recommenders"
 MODEL_TRAINER_SVD_TRAINED_MODEL_NAME: str = "svd.pkl"
 MODEL_TRAINER_ITEM_KNN_TRAINED_MODEL_NAME: str = "itembasedknn.pkl"
 MODEL_TRAINER_USER_KNN_TRAINED_MODEL_NAME: str = "userbasedknn.pkl"
+
+MODEL_TRAINER_CON_TRAINED_MODEL_DIR:str = "content_based_recommenders"
+MODEL_TRAINER_TFIDF_MODEL_NAME:str = "tfidf.pkl"
+# MODEL_TRAINER_CV_MODEL_NAME:str = "cvcosinesimilarity.pkl"
