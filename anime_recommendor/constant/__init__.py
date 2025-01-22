@@ -40,5 +40,9 @@ MODEL_TRAINER_ITEM_KNN_TRAINED_MODEL_NAME: str = "itembasedknn.pkl"
 MODEL_TRAINER_USER_KNN_TRAINED_MODEL_NAME: str = "userbasedknn.pkl"
 
 MODEL_TRAINER_CON_TRAINED_MODEL_DIR:str = "content_based_recommenders"
-MODEL_TRAINER_TFIDF_MODEL_NAME:str = "tfidf.pkl"
-# MODEL_TRAINER_CV_MODEL_NAME:str = "cvcosinesimilarity.pkl"
+MODEL_TRAINER_COSINESIMILARITY_MODEL_NAME:str = "cosine_similarity.pkl"
+
+
+# MODEL_TRAINER_SIGMOID_MODEL_NAME:str = "sigmoidtf.pkl"
+
+MODEL_TRAINER_POP_TRAINED_MODEL_DIR:str = "popularity_based_recommenders" 
