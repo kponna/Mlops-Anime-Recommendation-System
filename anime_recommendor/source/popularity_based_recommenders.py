@@ -6,12 +6,7 @@ from anime_recommendor.entity.artifact_entity import DataIngestionArtifact
 from anime_recommendor.utils.ml_utils.models.popularity_based_filtering import PopularityBasedFiltering 
 
 
-class PopularityBasedRecommendor:
-    # def __init__(self,data_transformation_artifact = DataTransformationArtifact):
-    #     try:
-    #         self.data_transformation_artifact = data_transformation_artifact
-    #     except Exception as e:
-    #         raise AnimeRecommendorException(e,sys)
+class PopularityBasedRecommendor: 
 
     def __init__(self,data_ingestion_artifact = DataIngestionArtifact):
         try:
