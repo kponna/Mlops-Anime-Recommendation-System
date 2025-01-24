@@ -2,12 +2,12 @@ import sys
 import numpy as np
 import pandas as pd
 
-from anime_recommendor.loggers.logging import logging
-from anime_recommendor.exception.exception import AnimeRecommendorException
-from anime_recommendor.utils.main_utils.utils import export_data_to_dataframe
-from anime_recommendor.constant import *
-from anime_recommendor.entity.config_entity import DataTransformationConfig
-from anime_recommendor.entity.artifact_entity import DataIngestionArtifact,DataTransformationArtifact
+from anime_recommender.loggers.logging import logging
+from anime_recommender.exception.exception import AnimeRecommendorException
+from anime_recommender.utils.main_utils.utils import export_data_to_dataframe
+from anime_recommender.constant import *
+from anime_recommender.entity.config_entity import DataTransformationConfig
+from anime_recommender.entity.artifact_entity import DataIngestionArtifact,DataTransformationArtifact
  
 class DataTransformation:
     """

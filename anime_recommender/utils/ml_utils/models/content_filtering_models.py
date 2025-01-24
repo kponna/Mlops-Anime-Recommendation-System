@@ -1,8 +1,8 @@
 import sys
 import os
 import pandas as pd
-from anime_recommendor.loggers.logging import logging
-from anime_recommendor.exception.exception import AnimeRecommendorException
+from anime_recommender.loggers.logging import logging
+from anime_recommender.exception.exception import AnimeRecommendorException
 from sklearn.feature_extraction.text import TfidfVectorizer 
 from sklearn.metrics.pairwise import  cosine_similarity
 import joblib

@@ -1,9 +1,9 @@
 import sys
 import pandas as pd
 import streamlit as st
-from anime_recommendor.utils.ml_utils.models.content_filtering_models import ContentBasedRecommender
-from anime_recommendor.utils.ml_utils.models.collaborative_filtering_models import CollaborativeAnimeRecommender 
-from anime_recommendor.utils.main_utils.utils import load_object
+from anime_recommender.utils.ml_utils.models.content_filtering_models import ContentBasedRecommender
+from anime_recommender.utils.ml_utils.models.collaborative_filtering_models import CollaborativeAnimeRecommender 
+from anime_recommender.utils.main_utils.utils import load_object
 
 # File paths
 anime_file_path = "datasets/Animes.csv"

@@ -3,11 +3,11 @@ import sys
 import numpy as np
 import pandas as pd
 import pymongo
-from anime_recommendor.loggers.logging import logging
-from anime_recommendor.exception.exception import AnimeRecommendorException
-from anime_recommendor.entity.config_entity import DataIngestionConfig
-from anime_recommendor.entity.artifact_entity import DataIngestionArtifact
-from anime_recommendor.utils.main_utils.utils import export_data_to_dataframe
+from anime_recommender.loggers.logging import logging
+from anime_recommender.exception.exception import AnimeRecommendorException
+from anime_recommender.entity.config_entity import DataIngestionConfig
+from anime_recommender.entity.artifact_entity import DataIngestionArtifact
+from anime_recommender.utils.main_utils.utils import export_data_to_dataframe
 MONGO_DB_URL = os.getenv("MONGO_URI")
 
 class DataIngestion:

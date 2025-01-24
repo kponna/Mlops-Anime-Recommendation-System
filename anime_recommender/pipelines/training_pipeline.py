@@ -1,20 +1,20 @@
 import sys
-from anime_recommendor.loggers.logging import logging
-from anime_recommendor.exception.exception import AnimeRecommendorException
+from anime_recommender.loggers.logging import logging
+from anime_recommender.exception.exception import AnimeRecommendorException
 
-from anime_recommendor.source.data_ingestion import DataIngestion
-from anime_recommendor.source.data_transformation import DataTransformation
-from anime_recommendor.source.collaborative_recommenders import CollaborativeModelTrainer
-from anime_recommendor.source.content_based_recommenders import ContentBasedModelTrainer
-from anime_recommendor.source.popularity_based_recommenders import PopularityBasedRecommendor
-from anime_recommendor.entity.config_entity import (
+from anime_recommender.source.data_ingestion import DataIngestion
+from anime_recommender.source.data_transformation import DataTransformation
+from anime_recommender.source.collaborative_recommenders import CollaborativeModelTrainer
+from anime_recommender.source.content_based_recommenders import ContentBasedModelTrainer
+from anime_recommender.source.popularity_based_recommenders import PopularityBasedRecommendor
+from anime_recommender.entity.config_entity import (
     TrainingPipelineConfig,
     DataIngestionConfig,
     DataTransformationConfig,
     CollaborativeModelConfig,
     ContentBasedModelConfig,
 )
-from anime_recommendor.entity.artifact_entity import (
+from anime_recommender.entity.artifact_entity import (
     DataIngestionArtifact,
     DataTransformationArtifact,
     CollaborativeModelArtifact,

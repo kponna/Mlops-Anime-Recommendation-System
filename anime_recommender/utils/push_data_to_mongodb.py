@@ -6,9 +6,9 @@ import pandas as pd
 import pymongo
 import certifi
 from dotenv import load_dotenv
-from anime_recommendor.loggers.logging import logging
-from anime_recommendor.exception.exception import AnimeRecommendorException
-from anime_recommendor.constant import * 
+from anime_recommender.loggers.logging import logging
+from anime_recommender.exception.exception import AnimeRecommendorException
+from anime_recommender.constant import * 
 
 # sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../..')))
  

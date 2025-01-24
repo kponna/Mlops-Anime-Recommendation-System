@@ -1,7 +1,7 @@
 import sys  
 import pandas as pd
-from anime_recommendor.loggers.logging import logging
-from anime_recommendor.exception.exception import AnimeRecommendorException
+from anime_recommender.loggers.logging import logging
+from anime_recommender.exception.exception import AnimeRecommendorException
  
 from surprise import Reader, Dataset, SVD
 from surprise.model_selection import cross_validate

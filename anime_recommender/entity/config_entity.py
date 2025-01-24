@@ -1,6 +1,6 @@
 import os
 from datetime import datetime
-from anime_recommendor.constant import *
+from anime_recommender.constant import *
 
 class TrainingPipelineConfig:
     """

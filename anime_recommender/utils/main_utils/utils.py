@@ -2,8 +2,8 @@ import os
 import sys
 import pandas as pd
 import joblib
-from anime_recommendor.loggers.logging import logging
-from anime_recommendor.exception.exception import AnimeRecommendorException
+from anime_recommender.loggers.logging import logging
+from anime_recommender.exception.exception import AnimeRecommendorException
 
 def export_data_to_dataframe(dataframe: pd.DataFrame, file_path: str) -> pd.DataFrame:
         try:

@@ -1,10 +1,10 @@
 import sys
-from anime_recommendor.loggers.logging import logging
-from anime_recommendor.exception.exception import AnimeRecommendorException
-from anime_recommendor.entity.config_entity import CollaborativeModelConfig
-from anime_recommendor.entity.artifact_entity import DataTransformationArtifact, CollaborativeModelArtifact
-from anime_recommendor.utils.main_utils.utils import load_csv_data, save_model, load_object
-from anime_recommendor.utils.ml_utils.models.collaborative_filtering_models import CollaborativeAnimeRecommender
+from anime_recommender.loggers.logging import logging
+from anime_recommender.exception.exception import AnimeRecommendorException
+from anime_recommender.entity.config_entity import CollaborativeModelConfig
+from anime_recommender.entity.artifact_entity import DataTransformationArtifact, CollaborativeModelArtifact
+from anime_recommender.utils.main_utils.utils import load_csv_data, save_model, load_object
+from anime_recommender.utils.ml_utils.models.collaborative_filtering_models import CollaborativeAnimeRecommender
 
 class CollaborativeModelTrainer:
     """

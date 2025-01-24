@@ -1,9 +1,9 @@
 import sys
-from anime_recommendor.exception.exception import AnimeRecommendorException
-from anime_recommendor.loggers.logging import logging
-from anime_recommendor.utils.main_utils.utils import load_csv_data 
-from anime_recommendor.entity.artifact_entity import DataIngestionArtifact
-from anime_recommendor.utils.ml_utils.models.popularity_based_filtering import PopularityBasedFiltering 
+from anime_recommender.exception.exception import AnimeRecommendorException
+from anime_recommender.loggers.logging import logging
+from anime_recommender.utils.main_utils.utils import load_csv_data 
+from anime_recommender.entity.artifact_entity import DataIngestionArtifact
+from anime_recommender.utils.ml_utils.models.popularity_based_filtering import PopularityBasedFiltering 
 
 
 class PopularityBasedRecommendor: 

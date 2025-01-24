@@ -1,11 +1,11 @@
 import sys
-from anime_recommendor.loggers.logging import logging
-from anime_recommendor.exception.exception import AnimeRecommendorException
-from anime_recommendor.entity.config_entity import ContentBasedModelConfig
-from anime_recommendor.entity.artifact_entity import ContentBasedModelArtifact, DataIngestionArtifact
-from anime_recommendor.utils.main_utils.utils import load_csv_data
-from anime_recommendor.utils.ml_utils.models.content_filtering_models import ContentBasedRecommender
-from anime_recommendor.constant import *
+from anime_recommender.loggers.logging import logging
+from anime_recommender.exception.exception import AnimeRecommendorException
+from anime_recommender.entity.config_entity import ContentBasedModelConfig
+from anime_recommender.entity.artifact_entity import ContentBasedModelArtifact, DataIngestionArtifact
+from anime_recommender.utils.main_utils.utils import load_csv_data
+from anime_recommender.utils.ml_utils.models.content_filtering_models import ContentBasedRecommender
+from anime_recommender.constant import *
 class ContentBasedModelTrainer:
     """Class to train the model, track metrics, and save the trained model."""
 
