@@ -8,5 +8,6 @@ wordcloud
 tensorflow
 scikit-surprise
 python-dotenv
-pymongo[srv]==3.6 
+pymongo[srv]==3.6
+streamlit
 # -e .

@@ -39,3 +39,20 @@ def save_model(model: object,file_path: str ) -> None:
         logging.info("Completed saving the model object.")
     except Exception as e:
         raise AnimeRecommendorException(e, sys) from e
+    
+def load_object(file_path:str)-> object:
+    """
+    Loads an object from a file using pickle.
+    Args:
+        file_path (str): Path to the file containing the object.
+    Returns:
+        object: Loaded object.
+    """
+    try:
+        if not os.path.exists(file_path):
+            raise Exception(f"The file: {file_path} is not exists")
+        with open(file_path,"rb") as file_obj:
+            print(file_obj)
+            return joblib.load(file_obj)
+    except Exception as e:
+        raise AnimeRecommendorException(e,sys) from e 

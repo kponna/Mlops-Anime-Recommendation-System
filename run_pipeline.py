@@ -9,6 +9,7 @@ from anime_recommendor.source.collaborative_recommenders import CollaborativeMod
 from anime_recommendor.source.content_based_recommenders import ContentBasedModelTrainer
 from anime_recommendor.entity.config_entity import TrainingPipelineConfig,DataIngestionConfig,DataTransformationConfig,CollaborativeModelConfig ,ContentBasedModelConfig
 from anime_recommendor.source.popularity_based_recommenders import PopularityBasedRecommendor
+
 if __name__ == "__main__":
     try:
         training_pipeline_config = TrainingPipelineConfig()  
