@@ -78,11 +78,16 @@ class DataTransformation:
             merged_df['average_rating'].replace('UNKNOWN', np.nan)
             merged_df['average_rating'] = pd.to_numeric(merged_df['average_rating'], errors='coerce')
             merged_df['average_rating'].fillna(merged_df['average_rating'].median())
-            merged_df = merged_df[merged_df['average_rating'] > 7]
-            logging.info(f"Shape of the Merged dataframe:{merged_df.shape}")
-            logging.info(f"Column names: {merged_df.columns}")
-            logging.info(f"Preview of the merged DataFrame:\n{merged_df.head()}")
-            return merged_df
+            merged_df = merged_df[merged_df['average_rating'] > 6]
+            cols_to_drop = [  'username', 'overview', 'type', 'episodes', 'producers',
+                'licensors', 'studios', 'source',   'rank', 'popularity',
+                'favorites', 'scored by', 'members' ]
+            cleaned_df = merged_df.copy()
+            cleaned_df = cleaned_df.drop(columns=cols_to_drop, inplace=True)
+            logging.info(f"Shape of the Merged dataframe:{cleaned_df.shape}")
+            logging.info(f"Column names: {cleaned_df.columns}")
+            logging.info(f"Preview of the merged DataFrame:\n{cleaned_df.head()}")
+            return cleaned_df
         except Exception as e:
             raise AnimeRecommendorException(e, sys)
         

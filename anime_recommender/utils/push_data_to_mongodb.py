@@ -16,7 +16,7 @@ from anime_recommender.constant import *
 load_dotenv()
 MONGO_DB_URL = os.getenv("MONGO_URI")
 
-class NetworkDataExtract:
+class AnimeDataExtract:
     def __init__(self):
         try:
             self.mongo_client = pymongo.MongoClient(MONGO_DB_URL, tlsCAFile=certifi.where())
@@ -47,12 +47,17 @@ class NetworkDataExtract:
         except Exception as e:
             raise AnimeRecommendorException(e, sys)
         
-    def insert_data_mongodb(self, records, database, collection_name):
+    def insert_data_mongodb(self, records, database, collection_name, batch_size=1000):
         try:
             db = self.mongo_client[database]
             col = db[collection_name]
-            col.insert_many(records)
+            for i in range(0, len(records), batch_size):
+                col.insert_many(records[i:i + batch_size])
+            print(f"Inserted {len(records)} records into MongoDB collection '{collection_name}'.")
             return len(records)
+        except pymongo.errors.ConnectionFailure as e:
+            logging.error("Failed to connect to MongoDB: %s", e)
+            raise AnimeRecommendorException(e, sys)
         except Exception as e:
             raise AnimeRecommendorException(e, sys)
 
@@ -60,12 +65,17 @@ if __name__ == '__main__':
     zip_file_path = ZIP_FILE_PATH
     destination_folder = DATASETS_FILE_PATH
     database = DATA_INGESTION_DATABASE_NAME 
-    network_obj = NetworkDataExtract()
+    anime_obj = AnimeDataExtract()
      
-    csv_files = network_obj.extract_csv_files(zip_file_path, destination_folder)
+    csv_files = anime_obj.extract_csv_files(zip_file_path, destination_folder)
     
     for csv_file in csv_files:
         collection_name = os.path.splitext(os.path.basename(csv_file))[0] 
-        records = network_obj.csv_to_json_convertor(file_path=csv_file)  
-        no_of_records = network_obj.insert_data_mongodb(records, database, collection_name)
+        records = anime_obj.csv_to_json_convertor(file_path=csv_file)  
+        no_of_records = anime_obj.insert_data_mongodb(records, database, collection_name)
         print(f"Inserted {no_of_records} records from {csv_file} into MongoDB collection '{collection_name}'.")
+
+    # csv_file = "datasets/Anime_UserRatings.csv"
+    # collection_name = os.path.splitext(os.path.basename(csv_file))[0]
+    # records = anime_obj.csv_to_json_convertor(file_path=csv_file)
+    # no_of_records = anime_obj.insert_data_mongodb(records, database, collection_name)
