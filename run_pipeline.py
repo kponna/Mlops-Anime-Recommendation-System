@@ -32,7 +32,7 @@ if __name__ == "__main__":
         collaborative_model_trainer_config = CollaborativeModelConfig(training_pipeline_config)
         collaborative_model_trainer = CollaborativeModelTrainer(collaborative_model_trainer_config= collaborative_model_trainer_config,data_transformation_artifact=data_transformation_artifact)
         logging.info("Initiating Collaborative Model training.")
-        collaborative_model_trainer_artifact = collaborative_model_trainer.initiate_model_trainer(model_type='user_knn')
+        collaborative_model_trainer_artifact = collaborative_model_trainer.initiate_model_trainer(model_type='svd')
         logging.info("Collaborative Model training completed.")
         print(collaborative_model_trainer_artifact)
 

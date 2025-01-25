@@ -16,8 +16,10 @@ class CollaborativeAnimeRecommender:
         self.knn_item_based = None
         self.knn_user_based = None
         self.prepare_data()
+ 
 
-    def prepare_data(self):
+    def prepare_data(self): 
+        self.df = self.df.drop_duplicates()
         reader = Reader(rating_scale=(1, 10))
         self.data = Dataset.load_from_df(self.df[['user_id', 'anime_id', 'rating']], reader)
         self.anime_pivot = self.df.pivot_table(index='name', columns='user_id', values='rating').fillna(0)
@@ -35,38 +37,51 @@ class CollaborativeAnimeRecommender:
         self.knn_item_based.fit(item_user_matrix) 
 
     def train_knn_user_based(self):
+        """Train the KNN model for user-based recommendations."""
         user_item_matrix = csr_matrix(self.user_pivot.values)
         self.knn_user_based = NearestNeighbors(metric='cosine', algorithm='brute')
-        self.knn_user_based.fit(user_item_matrix) 
-
-    def get_svd_recommendations(self, user_id, n=10, svd_model=None):
-        # Use the provided model or fall back to self.svd
-        svd = svd_model or self.svd
-        if svd is None:
+        self.knn_user_based.fit(user_item_matrix)  
+ 
+    def print_unique_user_ids(self):
+        """Print unique user IDs from the dataset."""
+        unique_user_ids = self.df['user_id'].unique()
+        logging.info(f"Unique User IDs: {unique_user_ids}")
+        return unique_user_ids
+    
+    def get_svd_recommendations(self, user_id, n=10, svd_model=None): 
+        # Use the provided SVD model or the trained self.svd model
+        svd_model = svd_model or self.svd
+        if svd_model is None:
             raise ValueError("SVD model is not provided or trained.")
 
-        # Generate predictions for all anime IDs
+        # Ensure user exists in the dataset
+        if user_id not in self.df['user_id'].unique():
+            return f"User ID '{user_id}' not found in the dataset."
+
+        # Get unique anime IDs
         anime_ids = self.df['anime_id'].unique()
-        predictions = [(anime_id, svd.predict(user_id, anime_id).est) for anime_id in anime_ids]
+
+        # Predict ratings for all anime for the given user
+        predictions = [(anime_id, svd_model.predict(user_id, anime_id).est) for anime_id in anime_ids]
         predictions.sort(key=lambda x: x[1], reverse=True)
 
-        # Extract top anime IDs
-        top_anime_ids = [pred[0] for pred in predictions[:n]]
+        # Extract top N anime IDs
+        recommended_anime_ids = [pred[0] for pred in predictions[:n]]
 
-        # Validate IDs against the dataset
-        if not all(anime_id in self.df['anime_id'].values for anime_id in top_anime_ids):
-            return "Some anime IDs are invalid or not present in the dataset."
+        # Get details of recommended anime
+        recommended_anime = self.df[self.df['anime_id'].isin(recommended_anime_ids)].drop_duplicates(subset='anime_id')
+        logging.info(f"Shape of recommended_anime: {recommended_anime.shape}")
+        # Limit to N recommendations
+        recommended_anime = recommended_anime.head(n)
 
-        anime_indices = self.df[self.df['anime_id'].isin(top_anime_ids)].index
         return pd.DataFrame({
-            'Anime name': self.df['name'].iloc[anime_indices].values,
-            'Image URL': self.df['image url'].iloc[anime_indices].values,
-            'Genres': self.df['genres'].iloc[anime_indices].values,
-            'Rating': self.df['average_rating'].iloc[anime_indices].values
+            'Anime Name': recommended_anime['name'].values,
+            'Genres': recommended_anime['genres'].values,
+            'Image URL': recommended_anime['image url'].values,
+            'Rating': recommended_anime['average_rating'].values
         })
-
-
-    def get_item_based_recommendations(self, anime_name, n_recommendations=5, knn_item_model=None):
+ 
+    def get_item_based_recommendations(self, anime_name, n_recommendations=10, knn_item_model=None):
         # Use the provided model or fall back to self.knn_item_based
         knn_item_based = knn_item_model or self.knn_item_based
         if knn_item_based is None:
@@ -79,246 +94,91 @@ class CollaborativeAnimeRecommender:
         # Get the index of the anime in the pivot table
         query_index = self.anime_pivot.index.get_loc(anime_name)
 
-        # Use the KNN model to find similar animes
+        # Use the KNN model to find similar animes (n_neighbors + 1 to exclude the query itself)
         distances, indices = knn_item_based.kneighbors(
             self.anime_pivot.iloc[query_index, :].values.reshape(1, -1),
             n_neighbors=n_recommendations + 1  # +1 because the query anime itself is included
-        )
+        ) 
+        recommendations = []
+        for i in range(1, len(distances.flatten())):  # Start from 1 to exclude the query anime
+            anime_title = self.anime_pivot.index[indices.flatten()[i]]
+            distance = distances.flatten()[i]
+            recommendations.append((anime_title, distance))
 
-        # Map the indices to the original DataFrame
-        try:
-            anime_indices = self.df.loc[
-                self.df['name'].isin(self.anime_pivot.index[indices.flatten()[1:]])
-            ].index
-        except Exception as e:
-            return f"Error in fetching recommendations: {e}"
+        # Fetch the recommended anime names (top n_recommendations)
+        recommended_anime_titles = [rec[0] for rec in recommendations]
+        logging.info(f"Top {n_recommendations} recommendations: {recommended_anime_titles}")
+        filtered_df = self.df[self.df['name'].isin(recommended_anime_titles)].drop_duplicates(subset='name')
+        logging.info(f"Shape of filtered df: {filtered_df.shape}")
+        # Limit the results to `n_recommendations`
+        filtered_df = filtered_df.head(n_recommendations)
 
-        # Return recommendations as a DataFrame
         return pd.DataFrame({
-            'Anime Name': self.df.loc[anime_indices, 'name'].values,
-            'Image URL': self.df.loc[anime_indices, 'image url'].values,
-            'Genres': self.df.loc[anime_indices, 'genres'].values,
-            'Rating': self.df.loc[anime_indices, 'average_rating'].values
-        })
+            'Anime Name': filtered_df['name'].values,
+            'Image URL': filtered_df['image url'].values,
+            'Genres': filtered_df['genres'].values,
+            'Rating': filtered_df['average_rating'].values
+        }) 
 
+    def get_user_based_recommendations(self, user_id, n_recommendations=10, knn_user_model=None):
+        """
+        Recommend anime for a given user based on similar users' preferences using the provided or trained KNN model.
 
-    def get_user_based_recommendations(self, user_id, n_recommendations=5, knn_user_model=None):
+        Args:
+            user_id (int): The ID of the user.
+            n_recommendations (int): Number of recommendations to return.
+            knn_user_model (NearestNeighbors, optional): Pre-trained KNN model. Defaults to None.
+
+        Returns:
+            pd.DataFrame: A DataFrame containing recommended anime titles and related information.
+        """
         # Use the provided model or fall back to self.knn_user_based
         knn_user_based = knn_user_model or self.knn_user_based
         if knn_user_based is None:
             raise ValueError("User-based KNN model is not provided or trained.")
 
-        user_id = float(user_id)
+        # Ensure the user exists in the pivot table
+        user_id = float(user_id)  # Convert to match pivot table index type
         if user_id not in self.user_pivot.index:
-            return f"User '{user_id}' not found in the dataset."
+            return f"User ID '{user_id}' not found in the dataset."
 
+        # Find the user's index in the pivot table
         user_idx = self.user_pivot.index.get_loc(user_id)
+
+        # Use the KNN model to find the nearest neighbors
         distances, indices = knn_user_based.kneighbors(
             self.user_pivot.iloc[user_idx, :].values.reshape(1, -1),
-            n_neighbors=n_recommendations + 1
+            n_neighbors=n_recommendations + 1  # Include the user itself
         )
 
+        # Get the list of anime the user has already rated
         user_rated_anime = set(self.user_pivot.columns[self.user_pivot.iloc[user_idx, :] > 0])
+
+        # Collect all anime rated by the nearest neighbors
         all_neighbor_ratings = []
-        for i in range(1, len(distances.flatten())):
+        for i in range(1, len(distances.flatten())):  # Start from 1 to exclude the user itself
             neighbor_idx = indices.flatten()[i]
             neighbor_rated_anime = self.user_pivot.iloc[neighbor_idx, :]
             neighbor_ratings = neighbor_rated_anime[neighbor_rated_anime > 0]
             all_neighbor_ratings.extend(neighbor_ratings.index)
 
+        # Count how frequently each anime is rated by neighbors
         anime_counter = Counter(all_neighbor_ratings)
+
+        # Recommend anime not already rated by the user
         recommendations = [(anime, count) for anime, count in anime_counter.items() if anime not in user_rated_anime]
-        recommendations.sort(key=lambda x: x[1], reverse=True)
-        top_anime_names = [rec[0] for rec in recommendations[:n_recommendations]]
-        anime_indices = self.df[self.df['name'].isin(top_anime_names)].index
+        recommendations.sort(key=lambda x: x[1], reverse=True)  # Sort by frequency
+
+        # Extract recommended anime names and their details
+        recommended_anime_titles = [rec[0] for rec in recommendations[:n_recommendations]]
+        filtered_df = self.df[self.df['name'].isin(recommended_anime_titles)].drop_duplicates(subset='name')
+        logging.info(f"Shape of filtered df: {filtered_df.shape}")
+        # Limit the results to `n_recommendations`
+        filtered_df = filtered_df.head(n_recommendations)
 
         return pd.DataFrame({
-            'Anime name': self.df['name'].iloc[anime_indices].values,
-            'Image URL': self.df['image url'].iloc[anime_indices].values,
-            'Genres': self.df['genres'].iloc[anime_indices].values,
-            'Rating': self.df['rating'].iloc[anime_indices].values
+            'Anime Name': filtered_df['name'].values,
+            'Image URL': filtered_df['image url'].values,
+            'Genres': filtered_df['genres'].values,
+            'Rating': filtered_df['average_rating'].values
         })
-
-
-
-    # def get_svd_recommendations(self, user_id, n=10):
-    #     if not self.svd:
-    #         self.train_svd()
-        
-    #     # Generate predictions for all anime IDs
-    #     anime_ids = self.df['anime_id'].unique() 
-    #     predictions = [(anime_id, self.svd.predict(user_id, anime_id).est) for anime_id in anime_ids]
-    #     predictions.sort(key=lambda x: x[1], reverse=True) 
-    
-    #     # Extract top anime IDs
-    #     top_anime_ids = [pred[0] for pred in predictions[:n]]
-        
-    #     # Validate IDs against the dataset
-    #     if not all(anime_id in self.df['anime_id'].values for anime_id in top_anime_ids):
-    #         return "Some anime IDs are invalid or not present in the dataset."
- 
-    #     anime_indices = self.df[self.df['anime_id'].isin(top_anime_ids)].index
-    #     return pd.DataFrame({
-    #         'Anime name': self.df['name'].iloc[anime_indices].values,
-    #         'Image URL': self.df['image url'].iloc[anime_indices].values,
-    #         'Genres': self.df['genres'].iloc[anime_indices].values,
-    #         'Rating': self.df['average_rating'].iloc[anime_indices].values
-    #     }) 
-    
-    
-
-    # def get_item_based_recommendations(self, anime_name, n_recommendations=5):
-    #     # Check if the KNN model is trained; if not, train it
-    #     if not self.knn_item_based:
-    #         self.train_knn_item_based()
-        
-    #     # Ensure the anime name exists in the pivot table
-    #     if anime_name not in self.anime_pivot.index:
-    #         return f"Anime title '{anime_name}' not found in the dataset."
-        
-    #     # Get the index of the anime in the pivot table
-    #     query_index = self.anime_pivot.index.get_loc(anime_name)
-        
-    #     # Use the KNN model to find similar animes
-    #     distances, indices = self.knn_item_based.kneighbors(
-    #         self.anime_pivot.iloc[query_index, :].values.reshape(1, -1), 
-    #         n_neighbors=n_recommendations + 1  # +1 because the query anime itself is included
-    #     )
-        
-    #     # Map the indices to the original DataFrame
-    #     try:
-    #         anime_indices = self.df.loc[
-    #             self.df['name'].isin(self.anime_pivot.index[indices.flatten()[1:]])
-    #         ].index
-    #     except Exception as e:
-    #         return f"Error in fetching recommendations: {e}"
-    
-    #     # Return recommendations as a DataFrame
-    #     return pd.DataFrame({
-    #         'Anime Name': self.df.loc[anime_indices, 'name'].values,
-    #         'Image URL': self.df.loc[anime_indices, 'image url'].values,
-    #         'Genres': self.df.loc[anime_indices, 'genres'].values,
-    #         'Rating': self.df.loc[anime_indices, 'average_rating'].values
-    #     })
- 
-    
-    # def get_user_based_recommendations(self, user_id, n_recommendations=5):
-    #     if not self.knn_user_based:
-    #         self.train_knn_user_based()
-    #     user_id = float(user_id)
-    #     if user_id not in self.user_pivot.index:
-    #         return f"User '{user_id}' not found in the dataset."
-    #     user_idx = self.user_pivot.index.get_loc(user_id)
-    #     distances, indices = self.knn_user_based.kneighbors(
-    #         self.user_pivot.iloc[user_idx, :].values.reshape(1, -1), 
-    #         n_neighbors=n_recommendations + 1
-    #     )
-    #     user_rated_anime = set(self.user_pivot.columns[self.user_pivot.iloc[user_idx, :] > 0])
-    #     all_neighbor_ratings = []
-    #     for i in range(1, len(distances.flatten())):
-    #         neighbor_idx = indices.flatten()[i]
-    #         neighbor_rated_anime = self.user_pivot.iloc[neighbor_idx, :]
-    #         neighbor_ratings = neighbor_rated_anime[neighbor_rated_anime > 0]
-    #         all_neighbor_ratings.extend(neighbor_ratings.index)
-    #     anime_counter = Counter(all_neighbor_ratings)
-    #     recommendations = [(anime, count) for anime, count in anime_counter.items() if anime not in user_rated_anime]
-    #     recommendations.sort(key=lambda x: x[1], reverse=True)
-    #     top_anime_names = [rec[0] for rec in recommendations[:n_recommendations]]
-    #     anime_indices = self.df[self.df['name'].isin(top_anime_names)].index
-
-    #     return pd.DataFrame({
-    #         'Anime name': self.df['name'].iloc[anime_indices].values,
-    #         'Image URL': self.df['image url'].iloc[anime_indices].values,
-    #         'Genres': self.df['genres'].iloc[anime_indices].values,
-    #         'Rating': self.df['rating'].iloc[anime_indices].values
-    #     })
-    
-    # def get_svd_recommendations(self, user_id, n=10):
-    #     if not self.svd:
-    #         self.train_svd()
-    #     anime_ids = self.df['anime_id'].unique()
-    #     predictions = [(anime_id, self.svd.predict(user_id, anime_id).est) for anime_id in anime_ids]
-    #     predictions.sort(key=lambda x: x[1], reverse=True)
-    #     top_anime_ids = [pred[0] for pred in predictions[:n]]
-    #     anime_indices = self.df[self.df['anime_id'].isin(top_anime_ids)].index
-
-    #     return pd.DataFrame({
-    #         'Anime name': self.df['name'].iloc[anime_indices].values,
-    #         'Image URL': self.df['image url'].iloc[anime_indices].values,
-    #         'Genres': self.df['genres'].iloc[anime_indices].values,
-    #         'Rating': self.df['average_rating'].iloc[anime_indices].values
-    #     })
-
-     # def get_item_based_recommendations(self, anime_name, n_recommendations=5):
-    #     if not self.knn_item_based:
-    #         self.train_knn_item_based()
-    #     if anime_name not in self.anime_pivot.index:
-    #         return f"Anime title '{anime_name}' not found in the dataset."
-    #     query_index = self.anime_pivot.index.get_loc(anime_name)
-    #     distances, indices = self.knn_item_based.kneighbors(
-    #         self.anime_pivot.iloc[query_index, :].values.reshape(1, -1), 
-    #         n_neighbors=n_recommendations + 1
-    #     )
-    #     anime_indices = [self.df[self.df['name'] == self.anime_pivot.index[idx]].index[0] for idx in indices.flatten()[1:]]
-
-    #     return pd.DataFrame({
-    #         'Anime name': self.df['name'].iloc[anime_indices].values,
-    #         'Image URL': self.df['image url'].iloc[anime_indices].values,
-    #         'Genres': self.df['genres'].iloc[anime_indices].values,
-    #         'Rating': self.df['average_rating'].iloc[anime_indices].values
-    #     })
-
-
-
-
-    # def get_item_based_recommendations(self, anime_name, n_recommendations=5):
-    #     if not self.knn_item_based:
-    #         self.train_knn_item_based()
-    #     if anime_name not in self.anime_pivot.index:
-    #         return f"Anime title '{anime_name}' not found in the dataset."
-    #     query_index = self.anime_pivot.index.get_loc(anime_name)
-    #     distances, indices = self.knn_item_based.kneighbors(
-    #         self.anime_pivot.iloc[query_index, :].values.reshape(1, -1), 
-    #         n_neighbors=n_recommendations + 1
-    #     )
-    #     recommendations = [
-    #         (self.anime_pivot.index[indices.flatten()[i]], distances.flatten()[i])
-    #         for i in range(1, len(distances.flatten()))
-    #     ]
-    #     return recommendations
-
-    
-    # def get_svd_recommendations(self, user_id, n=10):
-    #     if not self.svd:
-    #         self.train_svd()
-    #     anime_ids = self.df['anime_id'].unique()
-    #     predictions = [(anime_id, self.svd.predict(user_id, anime_id).est) for anime_id in anime_ids]
-    #     predictions.sort(key=lambda x: x[1], reverse=True)
-    #     top_anime_ids = [pred[0] for pred in predictions[:n]]
-    #     anime_names = set(self.df[self.df['anime_id'].isin(top_anime_ids)]['name'].tolist())
-    #     return anime_names
-
-
-
-    # def get_user_based_recommendations(self, user_id, n_recommendations=5):
-    #     if not self.knn_user_based:
-    #         self.train_knn_user_based()
-    #     user_id = float(user_id)
-    #     if user_id not in self.user_pivot.index:
-    #         return f"User '{user_id}' not found in the dataset."
-    #     user_idx = self.user_pivot.index.get_loc(user_id)
-    #     distances, indices = self.knn_user_based.kneighbors(
-    #         self.user_pivot.iloc[user_idx, :].values.reshape(1, -1), 
-    #         n_neighbors=n_recommendations + 1
-    #     )
-    #     user_rated_anime = set(self.user_pivot.columns[self.user_pivot.iloc[user_idx, :] > 0])
-    #     all_neighbor_ratings = []
-    #     for i in range(1, len(distances.flatten())):
-    #         neighbor_idx = indices.flatten()[i]
-    #         neighbor_rated_anime = self.user_pivot.iloc[neighbor_idx, :]
-    #         neighbor_ratings = neighbor_rated_anime[neighbor_rated_anime > 0]
-    #         all_neighbor_ratings.extend(neighbor_ratings.index)
-    #     anime_counter = Counter(all_neighbor_ratings)
-    #     recommendations = [(anime, count) for anime, count in anime_counter.items() if anime not in user_rated_anime]
-    #     recommendations.sort(key=lambda x: x[1], reverse=True)
-    #     return recommendations[:n_recommendations]

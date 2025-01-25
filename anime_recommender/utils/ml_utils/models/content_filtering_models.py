@@ -10,7 +10,7 @@ class ContentBasedRecommender:
     """
     A content-based recommender system using TF-IDF Vectorizer and Cosine Similarity.
     """
-    def __init__(self, df, model_path=None): 
+    def __init__(self, df): 
         try:
             # Drop missing values from the DataFrame
             self.df = df.dropna()
