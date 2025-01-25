@@ -14,13 +14,13 @@ itembasedknn = "models/itembasedknn.pkl"
 svd = "models/svd.pkl"
 cosine_tfv = "models/cosine_similarity.pkl"
 
-    anime_file_path = data_ingestion_artifact.feature_store_anime_file_path
-    userratings_file_path = data_ingestion_artifact.feature_store_userrating_file_path
+    # anime_file_path = data_ingestion_artifact.feature_store_anime_file_path
+    # userratings_file_path = data_ingestion_artifact.feature_store_userrating_file_path
 
-    merged_file_path = "datasets/Anime_UserRatings.csv"  # This can also be obtained from Data Transformation artifact 
+    # merged_file_path = "datasets/Anime_UserRatings.csv"  # This can also be obtained from Data Transformation artifact 
 
-    anime_data = pd.read_csv(anime_file_path)
-    userratings_data = pd.read_csv(userratings_file_path)
+    # anime_data = pd.read_csv(anime_file_path)
+    # userratings_data = pd.read_csv(userratings_file_path)
 
 st.set_page_config(page_title="Anime Recommendation System", layout="wide")
 
