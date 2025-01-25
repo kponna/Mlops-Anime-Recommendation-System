@@ -6,16 +6,39 @@ from anime_recommender.utils.ml_utils.models.collaborative_filtering_models impo
 from anime_recommender.utils.main_utils.utils import load_object,fetch_data_from_mongodb
 from anime_recommender.loggers.logging import logging
 from anime_recommender.constant import *
-# File paths
-# anime_file_path = "datasets/Animes.csv"
-# userratings_file_path = "datasets/UserRatings.csv"
-# merged_file_path = "datasets/Anime_UserRatings.csv"
-userbasedknn = "models/userbasedknn.pkl"
-itembasedknn = "models/itembasedknn.pkl"
-svd = "models/svd.pkl"
-cosine_tfv = "models/cosine_similarity.pkl"
- 
+from huggingface_hub import hf_hub_download
+import joblib
 
+# Define your repository name
+repo_name = "krishnaveni76/anime-recommendation-models"
+
+# Load models
+cosine_similarity_model_path = hf_hub_download(repo_name, "cosine_similarity.pkl")
+item_based_knn_model_path = hf_hub_download(repo_name, "itembasedknn.pkl")
+user_based_knn_model_path = hf_hub_download(repo_name, "userbasedknn.pkl")
+svd_model_path = hf_hub_download(repo_name, "svd.pkl")
+
+# Load the models into memory
+with open(cosine_similarity_model_path, "rb") as f:
+    cosine_similarity_model = joblib.load(f)
+
+with open(item_based_knn_model_path, "rb") as f:
+    item_based_knn_model = joblib.load(f)
+
+with open(user_based_knn_model_path, "rb") as f:
+    user_based_knn_model = joblib.load(f)
+
+with open(svd_model_path, "rb") as f:
+    svd_model = joblib.load(f)
+
+# Now you can use these models for recommendations
+print("Models loaded successfully!")
+
+# userbasedknn = "models/userbasedknn.pkl"
+# itembasedknn = "models/itembasedknn.pkl"
+# svd = "models/svd.pkl"
+# cosine_tfv = "models/cosine_similarity.pkl"
+  
 
 st.set_page_config(page_title="Anime Recommendation System", layout="wide")
 
@@ -28,6 +51,9 @@ if app_selector == "Content-Based Recommender":
     st.title("Content-Based Recommender System") 
     try:
         anime_data = fetch_data_from_mongodb(database_name=DATA_INGESTION_DATABASE_NAME,collection_name=ANIME_COLLECTION_NAME)
+        
+        # print(anime_data.head())
+        # print(anime_data.shape)
         anime_list = anime_data["name"].tolist()
         anime_name = st.selectbox("Select an Anime", anime_list)
 
@@ -53,7 +79,7 @@ if app_selector == "Content-Based Recommender":
         if st.button("Get Recommendations"):
             try:
                 recommender = ContentBasedRecommender(anime_data)
-                recommendations = recommender.get_rec_cosine(anime_name, n_recommendations=n_recommendations,model_path=cosine_tfv)
+                recommendations = recommender.get_rec_cosine(anime_name, n_recommendations=n_recommendations,model_path=cosine_similarity_model)
 
                 if isinstance(recommendations, str):
                     st.warning(recommendations)
@@ -82,6 +108,10 @@ elif app_selector == "Collaborative Recommender":
     
     try: 
         animerating_data = fetch_data_from_mongodb(database_name=DATA_INGESTION_DATABASE_NAME,collection_name=ANIMEUSERRATINGS_COLLECTION_NAME) 
+        
+
+        print(animerating_data.head())
+        print(animerating_data.shape)
         # Sidebar for choosing the collaborative filtering method
         collaborative_method = st.sidebar.selectbox(
             "Choose a collaborative filtering method:", 
@@ -103,16 +133,16 @@ elif app_selector == "Collaborative Recommender":
             # Load the recommender
             recommender = CollaborativeAnimeRecommender(animerating_data) 
             if collaborative_method == "SVD Collaborative Filtering":
-                svd_model = load_object(svd)
+                # svd_model = load_object(svd)
                 recommendations = recommender.get_svd_recommendations(user_id, n=n_recommendations, svd_model=svd_model) 
                 # st.write(recommendations.head())
             elif collaborative_method == "User-Based Collaborative Filtering":
-                user_knn_model = load_object(userbasedknn)
-                recommendations = recommender.get_user_based_recommendations(user_id, n_recommendations=n_recommendations, knn_user_model=user_knn_model)
+                # user_knn_model = load_object(userbasedknn)
+                recommendations = recommender.get_user_based_recommendations(user_id, n_recommendations=n_recommendations, knn_user_model=user_based_knn_model)
             elif collaborative_method == "Anime-Based KNN Collaborative Filtering":
                 if anime_name:
-                    item_knn_model = load_object(itembasedknn)
-                    recommendations = recommender.get_item_based_recommendations(anime_name, n_recommendations=n_recommendations, knn_item_model=item_knn_model)
+                    # item_knn_model = load_object(itembasedknn)
+                    recommendations = recommender.get_item_based_recommendations(anime_name, n_recommendations=n_recommendations, knn_item_model=item_based_knn_model)
                 else:
                     st.error("Invalid Anime Name. Please enter a valid anime title.")
             
@@ -134,9 +164,3 @@ elif app_selector == "Collaborative Recommender":
                 st.error("No recommendations found.")
     except Exception as e:
         st.error(f"An error occurred: {e}")  
-
-print(anime_data.head())
-print(anime_data.shape)
-
-print(animerating_data.head())
-print(animerating_data.shape)
