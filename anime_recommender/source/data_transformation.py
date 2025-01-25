@@ -78,7 +78,7 @@ class DataTransformation:
             merged_df['average_rating'].replace('UNKNOWN', np.nan)
             merged_df['average_rating'] = pd.to_numeric(merged_df['average_rating'], errors='coerce')
             merged_df['average_rating'].fillna(merged_df['average_rating'].median())
-            merged_df = merged_df[merged_df['average_rating'] > 6]
+            merged_df = merged_df[merged_df['average_rating'] > 5]
             cols_to_drop = [  'username', 'overview', 'type', 'episodes', 'producers',
                 'licensors', 'studios', 'source',   'rank', 'popularity',
                 'favorites', 'scored by', 'members' ]

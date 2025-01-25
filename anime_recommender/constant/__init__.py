@@ -14,7 +14,7 @@ DATASETS_FILE_PATH:str = "datasets"
 
 ANIME_COLLECTION_NAME:str = "Animes"
 RATING_COLLECTION_NAME:str = "UserRatings"
- 
+ANIMEUSERRATINGS_COLLECTION_NAME:str = "Anime_UserRatings"
 """
 Data Ingestion related constant start with DATA_INGESTION VAR NAME
 """ 

@@ -4,7 +4,7 @@ import pandas as pd
 import joblib
 from anime_recommender.loggers.logging import logging
 from anime_recommender.exception.exception import AnimeRecommendorException
-
+from anime_recommender.constant import *
 def export_data_to_dataframe(dataframe: pd.DataFrame, file_path: str) -> pd.DataFrame:
         try:
             logging.info(f"Saving DataFrame to file: {file_path}")
@@ -55,4 +55,30 @@ def load_object(file_path:str)-> object:
             print(file_obj)
             return joblib.load(file_obj)
     except Exception as e:
-        raise AnimeRecommendorException(e,sys) from e 
+        raise AnimeRecommendorException(e,sys) from e
+    
+
+import pymongo
+import numpy as np
+database_name = DATA_INGESTION_DATABASE_NAME
+collection_name = ANIMEUSERRATINGS_COLLECTION_NAME 
+MONGO_DB_URL = os.getenv("MONGO_URI")
+def fetch_data_from_mongodb(database_name:str ,collection_name: str) -> pd.DataFrame:
+        try:
+            logging.info(f"Fetching data from MongoDB collection: {collection_name}") 
+            mongo_client = pymongo.MongoClient(MONGO_DB_URL)
+            collection = mongo_client[database_name][collection_name]
+            df = pd.DataFrame(list(collection.find()))
+            if "_id" in df.columns.to_list():
+                df = df.drop(columns=["_id"],axis=1) 
+            df.replace({"na":np.nan},inplace=True)
+            logging.info(f"Shape of the dataframe:{df.shape}")
+            logging.info(f"Column names: {df.columns}")
+            logging.info(f"Preview of the DataFrame:\n{df.head()}")
+            logging.info("Data fetched successfully from MongoDB.")
+            return df
+        except pymongo.errors.ServerSelectionTimeoutError as e:
+            logging.error("Could not connect to MongoDB. Please check if MongoDB is running and the connection URI is correct.")
+            raise AnimeRecommendorException(e, sys)
+        except Exception as e:
+            raise AnimeRecommendorException(e, sys)

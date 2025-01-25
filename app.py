@@ -3,24 +3,19 @@ import pandas as pd
 import streamlit as st
 from anime_recommender.utils.ml_utils.models.content_filtering_models import ContentBasedRecommender
 from anime_recommender.utils.ml_utils.models.collaborative_filtering_models import CollaborativeAnimeRecommender 
-from anime_recommender.utils.main_utils.utils import load_object
+from anime_recommender.utils.main_utils.utils import load_object,fetch_data_from_mongodb
 from anime_recommender.loggers.logging import logging
+from anime_recommender.constant import *
 # File paths
-anime_file_path = "datasets/Animes.csv"
-userratings_file_path = "datasets/UserRatings.csv"
-merged_file_path = "datasets/Anime_UserRatings.csv"
+# anime_file_path = "datasets/Animes.csv"
+# userratings_file_path = "datasets/UserRatings.csv"
+# merged_file_path = "datasets/Anime_UserRatings.csv"
 userbasedknn = "models/userbasedknn.pkl"
 itembasedknn = "models/itembasedknn.pkl"
 svd = "models/svd.pkl"
 cosine_tfv = "models/cosine_similarity.pkl"
+ 
 
-    # anime_file_path = data_ingestion_artifact.feature_store_anime_file_path
-    # userratings_file_path = data_ingestion_artifact.feature_store_userrating_file_path
-
-    # merged_file_path = "datasets/Anime_UserRatings.csv"  # This can also be obtained from Data Transformation artifact 
-
-    # anime_data = pd.read_csv(anime_file_path)
-    # userratings_data = pd.read_csv(userratings_file_path)
 
 st.set_page_config(page_title="Anime Recommendation System", layout="wide")
 
@@ -32,7 +27,7 @@ app_selector = st.sidebar.radio(
 if app_selector == "Content-Based Recommender":
     st.title("Content-Based Recommender System") 
     try:
-        anime_data = pd.read_csv(anime_file_path)
+        anime_data = fetch_data_from_mongodb(database_name=DATA_INGESTION_DATABASE_NAME,collection_name=ANIME_COLLECTION_NAME)
         anime_list = anime_data["name"].tolist()
         anime_name = st.selectbox("Select an Anime", anime_list)
 
@@ -75,15 +70,10 @@ if app_selector == "Content-Based Recommender":
                                 f"<div class='anime-title'>{row[1]['Anime name']}</div>",
                                 unsafe_allow_html=True,
                             )
-                            st.caption(f"Genres: {row[1]['Genres']} | Rating: {row[1]['Rating']}")
-
-            except FileNotFoundError as e:
-                st.error(f"File not found: {str(e)}")
+                            st.caption(f"Genres: {row[1]['Genres']} | Rating: {row[1]['Rating']}") 
             except Exception as e:
                 st.error(f"Unexpected error: {str(e)}")
-
-    except FileNotFoundError:
-        st.error(f"File {anime_file_path} not found.")
+ 
     except Exception as e:
         st.error(f"Unexpected error: {str(e)}")
 
@@ -91,7 +81,7 @@ elif app_selector == "Collaborative Recommender":
     st.title("Collaborative Recommender System")
     
     try: 
-        animerating_data = pd.read_csv(merged_file_path)  
+        animerating_data = fetch_data_from_mongodb(database_name=DATA_INGESTION_DATABASE_NAME,collection_name=ANIMEUSERRATINGS_COLLECTION_NAME) 
         # Sidebar for choosing the collaborative filtering method
         collaborative_method = st.sidebar.selectbox(
             "Choose a collaborative filtering method:", 
@@ -144,3 +134,9 @@ elif app_selector == "Collaborative Recommender":
                 st.error("No recommendations found.")
     except Exception as e:
         st.error(f"An error occurred: {e}")  
+
+print(anime_data.head())
+print(anime_data.shape)
+
+print(animerating_data.head())
+print(animerating_data.shape)
